@@ -8,6 +8,13 @@ image:
   pullPolicy: IfNotPresent
   pullSecrets: []
 
+## used to define daemonset for windows nodes
+windowsImage:
+  repository: amazon/aws-node-termination-handler
+  tag: v1.3.1-windowsservercore-1809
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
 securityContext:
   runAsUserID: 1000
   runAsGroupID: 1000
@@ -26,6 +33,15 @@ resources:
   limits:
     memory: "128Mi"
     cpu: "100m"
+
+## resources for windows daemonset
+windowsResources:
+  requests:
+    memory: "512Mi"
+    cpu: "400m"
+  limits:
+    memory: "768Mi"
+    cpu: "600m"
 
 ## enableSpotInterruptionDraining If true, drain nodes when the spot interruption termination notice is receieved
 enableSpotInterruptionDraining: ""

@@ -1,0 +1,35 @@
+# Build the manager binary
+FROM golang:1.14-windowsservercore-1809 as builder
+
+WORKDIR /tmp/
+
+## Make for windows
+RUN Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+RUN choco install make -y
+
+## GOLANG env
+ARG GOPROXY="https://proxy.golang.org,direct"
+ARG GO111MODULE="on"
+ARG CGO_ENABLED=0
+ARG GOOS=windows 
+ARG GOARCH=amd64 
+
+# Copy go.mod and download dependencies
+WORKDIR /node-termination-handler
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
+# Build
+COPY . .
+RUN make build
+# In case the target is build for testing:
+# $ docker build  --target=builder -t test .
+ENTRYPOINT ["/node-termination-handler/build/node-termination-handler"]
+
+# Copy the controller-manager into a thin image
+FROM mcr.microsoft.com/windows/servercore:1809 as windows
+WORKDIR /
+COPY --from=builder /node-termination-handler/build/node-termination-handler ./node-termination-handler.exe
+COPY THIRD_PARTY_LICENSES .
+ENTRYPOINT ["/node-termination-handler.exe"]

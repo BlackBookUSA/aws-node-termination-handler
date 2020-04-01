@@ -40,7 +40,7 @@ spec:
                   - key: "beta.kubernetes.io/os"
                     operator: In
                     values:
-                      - linux
+                      - windows
                   - key: "beta.kubernetes.io/arch"
                     operator: In
                     values:
@@ -52,14 +52,8 @@ spec:
       dnsPolicy: {{ .Values.dnsPolicy }}    
       containers:
         - name: {{ include "aws-node-termination-handler.name" . }}
-          image: {{ .Values.image.repository}}:{{ .Values.image.tag }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          securityContext:
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: {{ .Values.securityContext.runAsUserID }}
-            runAsGroup: {{ .Values.securityContext.runAsGroupID }}
-            allowPrivilegeEscalation: false
+          image: {{ .Values.windowsImage.repository}}:{{ .Values.windowsImage.tag }}
+          imagePullPolicy: {{ .Values.windowsImage.pullPolicy }}
           volumeMounts:
             - name: "uptime"
               mountPath: "/proc/uptime"
@@ -105,15 +99,15 @@ spec:
             value: {{ .Values.enableSpotInterruptionDraining | quote }}
           - name: ENABLE_SCHEDULED_EVENT_DRAINING
             value: {{ .Values.enableScheduledEventDraining | quote }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+          windowsResources:
+            {{- toYaml .Values.windowsResources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if .Values.image.pullSecrets }}
+      {{- if .Values.windowsImage.pullSecrets }}
       imagePullSecrets:
-      {{- range .Values.image.pullSecrets }}
+      {{- range .Values.windowsImage.pullSecrets }}
         - name: {{ . }}
       {{- end }}
       {{- end }}
